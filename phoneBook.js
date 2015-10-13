@@ -8,6 +8,11 @@ var phoneBook = [
 var validPhoneRegExp = /^(\+?\d{1,4})?\s?(\(\d{3}\)|\d{3})\s?\d{3}(\-\d\-|\s\d\s|\d)\d{3}$/;
 var validEmailRegExp = /^([a-z0-9._-])*@([a-zа-я0-9_-]+\.)+([a-zа-я]+)$/;
 
+function toNiceNumber(phone) {
+    //var newNum = Number(toString(phone).replace(/\D+/g, ""));
+    var newNum = phone
+    return '+' + (newNum.toString()).slice(0, -10) + "(" + (newNum.toString()).slice(-10, -7) + ")" + (newNum.toString()).slice(-7, -4) + "-" + (newNum.toString()).slice(-4, -2) + "-" + (newNum.toString()).slice(-2);
+}
 
 function transformValidPhone(phone) {
     if (validPhoneRegExp.test(phone)) {
@@ -17,7 +22,7 @@ function transformValidPhone(phone) {
         return '' + newNum;
 
     }
-    return '----';
+    return false;
 }
 
 function transformValidEmail(email) {
@@ -25,7 +30,7 @@ function transformValidEmail(email) {
     if (validEmailRegExp.test(newEmail)) {
         return newEmail;
     }
-    return '----';
+    return false;
 }
 
 function notEmptyObject(obj) {
@@ -40,10 +45,12 @@ function notEmptyObject(obj) {
 */
 module.exports.add = function add(name, phone, email) {
     // Ваша невероятная магия здесь
-    phoneBook[0].push(name);
-    phoneBook[1].push(transformValidPhone(phone));
-    phoneBook[2].push(transformValidEmail(email));
-    console.log('Контакт '+name+' добавлен!')
+    if (transformValidEmail(email) && transformValidPhone(phone)) {
+        phoneBook[0].push(name);
+        phoneBook[1].push(transformValidPhone(phone));
+        phoneBook[2].push(transformValidEmail(email));
+        console.log('Контакт ' + name + ' добавлен!')
+    }
 };
 
 /*
@@ -54,28 +61,36 @@ module.exports.find = function find(query) {
     // Ваша удивительная магия здесь
     var nums = /[0-9]{2}/;
     var mails = /@/;
+    var search = []
+    if (query === undefined) {
+        query = '';
+    }
     if (nums.test(query)) {
         console.log('Ищем по номеру')
         for (var g = 1; g < phoneBook[0].length; g++) {
             if (phoneBook[1][g].indexOf(query) + 1) {
-                console.log(phoneBook[0][g] + ', ' + phoneBook[1][g] + ', ' + phoneBook[2][g])
-                return [1, g];
+                console.log(phoneBook[0][g] + ', ' + toNiceNumber(phoneBook[1][g]) + ', ' + phoneBook[2][g])
             }
         }
     } else if (mails.test(query)) {
         console.log('Ищем по почте')
         for (var g = 1; g < phoneBook[0].length; g++) {
             if (phoneBook[2][g].indexOf(query) + 1) {
-                console.log(phoneBook[0][g] + ', ' + phoneBook[1][g] + ', ' + phoneBook[2][g])
-                return [2, g];
+                console.log(phoneBook[0][g] + ', ' + toNiceNumber(phoneBook[1][g]) + ', ' + phoneBook[2][g])
             }
         }
     } else {
         for (var i = 0; i < 3; i++) {
             for (var g = 1; g < phoneBook[0].length; g++) {
                 if (phoneBook[i][g].indexOf(query) + 1) {
-                    console.log(phoneBook[0][g] + ', ' + phoneBook[1][g] + ', ' + phoneBook[2][g])
+                    //console.log(phoneBook[0][g] + ', ' + phoneBook[1][g] + ', ' + phoneBook[2][g])
+                    search[g] = g;
                 }
+            };
+        }
+        for (var g = 1; g < search.length; g++) {
+            if (typeof (search[g]) === 'number') {
+                console.log(phoneBook[0][g] + ', ' + toNiceNumber(phoneBook[1][g]) + ', ' + phoneBook[2][g])
             };
         }
     }
@@ -134,7 +149,6 @@ module.exports.importFromCsv = function importFromCsv(filename) {
 module.exports.showTable = function showTable() {
     var newNum = ''
     var onlyNum = '';
-    '+' + (newNum.toString()).slice(0, -10) + "(" + (newNum.toString()).slice(-10, -7) + ")" + (newNum.toString()).slice(-7, -4) + "-" + (newNum.toString()).slice(-4, -2) + "-" + (newNum.toString()).slice(-2);
     var border = '';
     var maxLength = 0;
     var maxNameLength = 0;
@@ -157,12 +171,7 @@ module.exports.showTable = function showTable() {
         for (var a = maxNameLength - phoneBook[0][g].length; a > 0; a--) spaceAfterName += ' ';
         for (var b = maxPhoneLength - phoneBook[1][g].length; b > 0; b--) spaceAfterPhone += ' ';
         for (var c = maxMailLength - phoneBook[2][g].length; c > 0; c--) spaceAfterMail += ' ';
-        if (phoneBook[1][g] != '----') {
-            onlyNum = Number(phoneBook[1][g].replace(/\D+/g, ""));
-            newNum = '+' + (onlyNum.toString()).slice(0, -10) + "(" + (onlyNum.toString()).slice(-10, -7) + ")" + (onlyNum.toString()).slice(-7, -4) + "-" + (onlyNum.toString()).slice(-4, -2) + "-" + (onlyNum.toString()).slice(-2);
-        } else {
-            newNum = '---------'
-        }
+        newNum = toNiceNumber(phoneBook[1][g])
         console.log('|' + phoneBook[0][g] + spaceAfterName + ' | ' + newNum + spaceAfterPhone + ' | ' + phoneBook[2][g] + spaceAfterMail + ' |');
         spaceAfterName = '';
         spaceAfterMail = '';
