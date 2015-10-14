@@ -11,26 +11,32 @@ var validEmailRegExp = /^([a-z0-9._-])*@([a-zа-я0-9_-]+\.)+([a-zа-я]+)$/;
 function toNiceNumber(phone) {
     //var newNum = Number(toString(phone).replace(/\D+/g, ""));
     var newNum = phone
-    return '+' + (newNum.toString()).slice(0, -10) + "(" + (newNum.toString()).slice(-10, -7) + ")" + (newNum.toString()).slice(-7, -4) + "-" + (newNum.toString()).slice(-4, -2) + "-" + (newNum.toString()).slice(-2);
+    return '+' + (newNum.toString()).slice(0, -10) + " (" + (newNum.toString()).slice(-10, -7) + ") " + (newNum.toString()).slice(-7, -4) + "-" + (newNum.toString()).slice(-4, -2) + "-" + (newNum.toString()).slice(-2);
+}
+
+function isValidPhone(phone) {
+    return validPhoneRegExp.test(phone)
+}
+
+function isValidEmail(email) {
+    var newEmail = email.toLocaleLowerCase();
+    return validEmailRegExp.test(newEmail)
+}
+
+function isValidName(name) {
+    return (name != '')
 }
 
 function transformValidPhone(phone) {
-    if (validPhoneRegExp.test(phone)) {
-        var newNum = Number(phone.replace(/\D+/g, ""));
-        if (newNum.toString().length === 10) newNum = '7' + newNum;
-        //return '+'+(newNum.toString()).slice(0,-10)+"("+(newNum.toString()).slice(-10,-7)+")"+(newNum.toString()).slice(-7,-4)+"-"+(newNum.toString()).slice(-4,-2)+"-"+(newNum.toString()).slice(-2);
-        return '' + newNum;
-
-    }
-    return false;
+    var newNum = Number(phone.replace(/\D+/g, ""));
+    if (newNum.toString().length === 10) newNum = '7' + newNum;
+    //return '+'+(newNum.toString()).slice(0,-10)+"("+(newNum.toString()).slice(-10,-7)+")"+(newNum.toString()).slice(-7,-4)+"-"+(newNum.toString()).slice(-4,-2)+"-"+(newNum.toString()).slice(-2);
+    return '' + newNum;
 }
 
 function transformValidEmail(email) {
     var newEmail = email.toLocaleLowerCase();
-    if (validEmailRegExp.test(newEmail)) {
-        return newEmail;
-    }
-    return false;
+    return newEmail;
 }
 
 function notEmptyObject(obj) {
@@ -45,12 +51,15 @@ function notEmptyObject(obj) {
 */
 module.exports.add = function add(name, phone, email) {
     // Ваша невероятная магия здесь
-    if (transformValidEmail(email) && transformValidPhone(phone)) {
+    if (isValidEmail(email) && isValidPhone(phone) && isValidName(name)) {
         phoneBook[0].push(name);
         phoneBook[1].push(transformValidPhone(phone));
         phoneBook[2].push(transformValidEmail(email));
         console.log('Контакт ' + name + ' добавлен!')
     }
+    if (!isValidName(name)) console.log('Контакт ' + phone + ',' + email + ' не добавлен! (имя не указано)');
+    if (!isValidPhone(phone)) console.log('Контакт ' + name + ' не добавлен! (неверный номер)');
+    if (!isValidName(email)) console.log('Контакт ' + name + ' не добавлен! (неверный Email)');
 };
 
 /*
@@ -165,7 +174,7 @@ module.exports.showTable = function showTable() {
         }
     }
     maxLength = maxMailLength + maxPhoneLength + maxNameLength;
-    for (var i = 0; i < maxLength + 14; i++) border += '='
+    for (var i = 0; i < maxLength + 16; i++) border += '='
     console.log(border);
     for (var g = phoneBook[1].length - 1; g > 0; g--) {
         for (var a = maxNameLength - phoneBook[0][g].length; a > 0; a--) spaceAfterName += ' ';
