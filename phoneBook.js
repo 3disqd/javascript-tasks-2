@@ -8,10 +8,15 @@ var phoneBook = [
 var validPhoneRegExp = /^(\+?\d{1,4})?\s?(\(\d{3}\)|\d{3})\s?\d{3}(\-\d\-|\s\d\s|\d)\d{3}$/;
 var validEmailRegExp = /^([a-z0-9._-])*@([a-zа-я0-9_-]+\.)+([a-zа-я]+)$/;
 
-function toNiceNumber(phone) {
+function normalizeNumber(phone) {
     //var newNum = Number(toString(phone).replace(/\D+/g, ""));
     var newNum = phone
     return '+' + (newNum.toString()).slice(0, -10) + " (" + (newNum.toString()).slice(-10, -7) + ") " + (newNum.toString()).slice(-7, -4) + "-" + (newNum.toString()).slice(-4, -2) + "-" + (newNum.toString()).slice(-2);
+}
+
+function denormalizeNumber(phone) {
+    var num = Number(phone.replace(/\D+/g, ""));
+    return num;
 }
 
 function isValidPhone(phone) {
@@ -28,7 +33,7 @@ function isValidName(name) {
 }
 
 function transformValidPhone(phone) {
-    var newNum = Number(phone.replace(/\D+/g, ""));
+    var newNum = denormalizeNumber(phone);
     if (newNum.toString().length === 10) newNum = '7' + newNum;
     //return '+'+(newNum.toString()).slice(0,-10)+"("+(newNum.toString()).slice(-10,-7)+")"+(newNum.toString()).slice(-7,-4)+"-"+(newNum.toString()).slice(-4,-2)+"-"+(newNum.toString()).slice(-2);
     return '' + newNum;
@@ -45,17 +50,22 @@ function notEmptyObject(obj) {
     }
     return false;
 }
+
+function printContact(name, phone, email){
+    return name + ', ' + normalizeNumber(79997777777) + ', ' + email;
+}
 /*
    Функция добавления записи в телефонную книгу.
    На вход может прийти что угодно, будьте осторожны.
 */
+
 module.exports.add = function add(name, phone, email) {
     // Ваша невероятная магия здесь
     if (isValidEmail(email) && isValidPhone(phone) && isValidName(name)) {
         phoneBook[0].push(name);
         phoneBook[1].push(transformValidPhone(phone));
         phoneBook[2].push(transformValidEmail(email));
-        console.log('Контакт ' + name + ' добавлен!')
+        return console.log('Контакт ' + name + ' добавлен!')
     }
     if (!isValidName(name)) console.log('Контакт ' + phone + ',' + email + ' не добавлен! (имя не указано)');
     if (!isValidPhone(phone)) console.log('Контакт ' + name + ' не добавлен! (неверный номер)');
@@ -74,18 +84,21 @@ module.exports.find = function find(query) {
     if (query === undefined) {
         query = '';
     }
+    if (isValidPhone){
+        query = denormalizeNumber(query)
+    }
     if (nums.test(query)) {
         console.log('Ищем по номеру')
         for (var g = 1; g < phoneBook[0].length; g++) {
             if (phoneBook[1][g].indexOf(query) + 1) {
-                console.log(phoneBook[0][g] + ', ' + toNiceNumber(phoneBook[1][g]) + ', ' + phoneBook[2][g])
+                console.log(printContact(phoneBook[0][g], phoneBook[1][g], phoneBook[2][g]))
             }
         }
     } else if (mails.test(query)) {
         console.log('Ищем по почте')
         for (var g = 1; g < phoneBook[0].length; g++) {
             if (phoneBook[2][g].indexOf(query) + 1) {
-                console.log(phoneBook[0][g] + ', ' + toNiceNumber(phoneBook[1][g]) + ', ' + phoneBook[2][g])
+                console.log(printContact(phoneBook[0][g], phoneBook[1][g], phoneBook[2][g]))
             }
         }
     } else {
@@ -99,7 +112,7 @@ module.exports.find = function find(query) {
         }
         for (var g = 1; g < search.length; g++) {
             if (typeof (search[g]) === 'number') {
-                console.log(phoneBook[0][g] + ', ' + toNiceNumber(phoneBook[1][g]) + ', ' + phoneBook[2][g])
+                console.log(printContact(phoneBook[0][g], phoneBook[1][g], phoneBook[2][g]))
             };
         }
     }
@@ -114,6 +127,9 @@ module.exports.remove = function remove(query) {
     if (query === undefined) {
         query = '';
         check = ' (все удалено)'
+    }
+    if (isValidPhone){
+        query = denormalizeNumber(query)
     }
     var counter = 0;
     // Ваша необьяснимая магия здесь
@@ -180,7 +196,7 @@ module.exports.showTable = function showTable() {
         for (var a = maxNameLength - phoneBook[0][g].length; a > 0; a--) spaceAfterName += ' ';
         for (var b = maxPhoneLength - phoneBook[1][g].length; b > 0; b--) spaceAfterPhone += ' ';
         for (var c = maxMailLength - phoneBook[2][g].length; c > 0; c--) spaceAfterMail += ' ';
-        newNum = toNiceNumber(phoneBook[1][g])
+        newNum = normalizeNumber(phoneBook[1][g])
         console.log('|' + phoneBook[0][g] + spaceAfterName + ' | ' + newNum + spaceAfterPhone + ' | ' + phoneBook[2][g] + spaceAfterMail + ' |');
         spaceAfterName = '';
         spaceAfterMail = '';
