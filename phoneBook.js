@@ -39,7 +39,7 @@ function transformValidPhone(phone) {
     return '' + newNum;
 }
 
-function transformValidEmail(email) {
+function transformEmail(email) {
     var newEmail = email.toLocaleLowerCase();
     return newEmail;
 }
@@ -52,7 +52,11 @@ function notEmptyObject(obj) {
 }
 
 function printContact(name, phone, email){
-    return name + ', ' + normalizeNumber(79997777777) + ', ' + email;
+    return [
+    name,
+    normalizeNumber(phone),
+    email
+].join(', ');
 }
 /*
    Функция добавления записи в телефонную книгу.
@@ -64,7 +68,7 @@ module.exports.add = function add(name, phone, email) {
     if (isValidEmail(email) && isValidPhone(phone) && isValidName(name)) {
         phoneBook[0].push(name);
         phoneBook[1].push(transformValidPhone(phone));
-        phoneBook[2].push(transformValidEmail(email));
+        phoneBook[2].push(transformEmail(email));
         return console.log('Контакт ' + name + ' добавлен!')
     }
     if (!isValidName(name)) console.log('Контакт ' + phone + ',' + email + ' не добавлен! (имя не указано)');
@@ -159,7 +163,7 @@ module.exports.importFromCsv = function importFromCsv(filename) {
             profile[i] = profile[i].split(';')
             phoneBook[0].push(profile[i][0]);
             phoneBook[1].push(transformValidPhone(profile[i][1]));
-            phoneBook[2].push(transformValidEmail(profile[i][2]));
+            phoneBook[2].push(transformEmail(profile[i][2]));
         }
     };
     // Ваша чёрная магия:
